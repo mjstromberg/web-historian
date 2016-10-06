@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var Promise = require('bluebird');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -26,12 +27,41 @@ exports.initialize = function(pathsObj) {
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = function() {
+  return new Promise(function(resolve, reject) {
+    fs.readFile(exports.paths.list, 'utf8', function(err, content) {
+      if (err) {
+        reject(err, content);
+      } else {
+        resolve(content);
+      }
+    });
+  }).then(function(content) {
+    return JSON.parse(content.toString());
+  }).catch(function(err, content) {
+    console.log('readListOfUrls', err, content);
+  });
+};
+// exports.readListOfUrls = readListOfUrls;
+
+exports.isUrlInList = function(url) {
+  return exports.readListOfUrls()
+    .then(function(listObj) {
+      // console.log('in listObj', listObj);
+      return _.contains(listObj, url);
+    });
 };
 
-exports.isUrlInList = function() {
-};
-
-exports.addUrlToList = function() {
+exports.addUrlToList = function(url) {
+  return exports.readListOfUrls()
+    .then(function(listObj) {
+      if (!listObj) {
+        listObj = {};
+      }
+      listObj[url] = url;
+      fs.writeFile(exports.paths.list, JSON.stringify(listObj), function(err) {
+        console.log('addUrlToList', err);
+      });
+    });
 };
 
 exports.isUrlArchived = function() {

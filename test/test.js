@@ -79,47 +79,44 @@ describe('server', function() {
 describe('archive helpers', function() {
   describe('#readListOfUrls', function () {
     it('should read urls from sites.txt', function (done) {
-      var urlArray = ['example1.com', 'example2.com'];
-      fs.writeFileSync(archive.paths.list, urlArray.join('\n'));
+      fs.writeFileSync(archive.paths.list, {'example1.com': true, 'example2.com': true});
 
-      archive.readListOfUrls(function(urls) {
-        expect(urls).to.deep.equal(urlArray);
-        done();
-      });
+      archive.readListOfUrls().then(function(parsedObj) {
+        expect(parsedObj).to.deep.equal({'example1.com': true, 'example2.com': true});
+        console.log('test', parsedObj);
+        done();  
+      }).catch(done());
     });
   });
 
   describe('#isUrlInList', function () {
     it('should check if a url is in the list', function (done) {
-      var urlArray = ['example1.com', 'example2.com'];
-      fs.writeFileSync(archive.paths.list, urlArray.join('\n'));
+      fs.writeFileSync(archive.paths.list, {'example1.com': true, 'example2.com': true});
 
-      var counter = 0;
-      var total = 2;
+      archive.isUrlInList('example1.com').then(function(result) {
+        expect(result).to.be.true;
+      }).catch(done());
 
-      archive.isUrlInList('example1.com', function (exists) {
-        expect(exists).to.be.true;
-        if (++counter === total) { done(); }
-      });
+      archive.isUrlInList('funyuns.com').then(function(result) {
+        expect(result).to.be.false;
+      }).catch(done());
 
-      archive.isUrlInList('gibberish', function (exists) {
-        expect(exists).to.be.false;
-        if (++counter === total) { done(); }
-      });
     });
   });
 
   describe('#addUrlToList', function () {
     it('should add a url to the list', function (done) {
-      var urlArray = ['example1.com', 'example2.com\n'];
-      fs.writeFileSync(archive.paths.list, urlArray.join('\n'));
 
-      archive.addUrlToList('someurl.com', function () {
-        archive.isUrlInList('someurl.com', function (exists) {
-          expect(exists).to.be.true;
-          done();
-        });
-      });
+      archive.addUrlToList('example1.com');
+      archive.addUrlToList('example2.com');
+
+      archive.isUrlInList('example1.com').then(function(result) {
+        expect(result).to.be.true;
+      }).catch(done());
+
+      archive.isUrlInList('example2.com').then(function(result) {
+        expect(result).to.be.true;
+      }).catch(done());
     });
   });
 
