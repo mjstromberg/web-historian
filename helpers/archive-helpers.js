@@ -56,8 +56,10 @@ exports.addUrlToList = function(url) {
   return exports.readListOfUrls()
     .then(function(listObj) {
       if (!listObj) {
+        console.log('no list');
         listObj = {};
       }
+      console.log('url', url);
       listObj[url] = url;
       fs.writeFile(exports.paths.list, JSON.stringify(listObj), function(err) {
         console.log('addUrlToList', err);
@@ -82,63 +84,10 @@ exports.isUrlArchived = function(url) {
   });
 };
 
-// exports.downloadUrls = function(urlArray) {
-//   // for each url in urlArray
-//   urlArray.forEach(function(url) {
-//     // create a new Promise
-//     new Promise(function(resolve, reject) {
-//       // check isUrlArchived
-//       exports.isUrlArchived(url)
-//       // then
-//       .then(function(bool) {
-//         console.log('boolean', bool);
-//         // if bool is false
-//         if (!bool) {
-//           //open a request
-//           console.log('url', url);
-//           request(url, function(error, response, body) {
-//             console.log('body', response);
-//             if (!error && response.statusCode === 200) {
-//               // store file in sites folder
-//               fs.writeFile(exports.path.archivedSites + url + '.html', body, function(err) {
-//                 if (err) {
-//                   console.log(err);
-//                 } else {
-//                   console.log(url, ' downloaded');
-//                 }
-//               });
-//             }
-//           }); 
-//         }
-//       });
-//     });
-//   });
-// };
 
-
-// exports.downloadUrls = function(urlArray) {
-//   // for each url in urlArray
-//   urlArray.forEach(function(url) {
-//     // create a new Promise
-//     return new Promise(function(resolve, reject) {
-//       request(url, function(error, response, body) {
-//         if (error) {
-//           reject(error);
-//         } else {
-//           resolve(response, body);
-//         }
-//       });
-//     }).then(function(response, body) {
-//       console.log('response', response.body);
-//       fs.writeFile(exports.paths.archivedSites + url + '.html', JSON.stringify(response.body), function(err) {
-//       });
-//     });
-//   });
-// };
-
-exports.downloadUrls = function(urlArray) {
+exports.downloadUrls = function(urlHolder) {
   // for each url in urlArray
-  urlArray.forEach(function(url) {
+  _.each(urlHolder, function(url) {
     request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url + '.html'));
   });
 };
