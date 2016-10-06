@@ -124,18 +124,9 @@ describe('archive helpers', function() {
     it('should check if a url is archived', function (done) {
       fs.writeFileSync(archive.paths.archivedSites + '/www.example.com', 'blah blah');
 
-      var counter = 0;
-      var total = 2;
-
-      archive.isUrlArchived('www.example.com', function (exists) {
-        expect(exists).to.be.true;
-        if (++counter === total) { done(); }
-      });
-
-      archive.isUrlArchived('www.notarchived.com', function (exists) {
-        expect(exists).to.be.false;
-        if (++counter === total) { done(); }
-      });
+      archive.isUrlArchived('www.example.com').then(function(result) {
+        expect(result).to.be.true;
+      }).catch(done());
     });
   });
 
