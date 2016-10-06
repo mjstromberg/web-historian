@@ -39,7 +39,7 @@ exports.handleRequest = function (req, res) {
         // set contentType to 'text/html'
         var contentType = 'text/html';
         // add url to sites.txt
-
+        // fs.appendFile(path.join(__dirname, '../archives/sites.txt'), )
         // save html file in sites folder
         
       }
