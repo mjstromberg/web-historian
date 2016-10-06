@@ -95,7 +95,7 @@ describe('archive helpers', function() {
 
       archive.isUrlInList('example1.com').then(function(result) {
         expect(result).to.be.true;
-      }).catch(done());
+      });
 
       archive.isUrlInList('funyuns.com').then(function(result) {
         expect(result).to.be.false;
@@ -112,7 +112,7 @@ describe('archive helpers', function() {
 
       archive.isUrlInList('example1.com').then(function(result) {
         expect(result).to.be.true;
-      }).catch(done());
+      });
 
       archive.isUrlInList('example2.com').then(function(result) {
         expect(result).to.be.true;
@@ -148,7 +148,7 @@ describe('archive helpers', function() {
       setTimeout(function () {
         expect(fs.readdirSync(archive.paths.archivedSites)).to.deep.equal(urlArray);
         done();
-      }, 500);
+      }, 2000);
     });
   });
 });

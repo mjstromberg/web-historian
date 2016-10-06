@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 var Promise = require('bluebird');
+var request = require('request');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -64,8 +65,67 @@ exports.addUrlToList = function(url) {
     });
 };
 
-exports.isUrlArchived = function() {
+exports.isUrlArchived = function(url) {
+  // Build a promise
+  return new Promise(function(resolve, reject) {
+    fs.readdir(exports.paths.archivedSites, function(err, files) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(files);
+      }
+    });
+  }).then(function(files) {
+    var newUrl = url + '.html';
+    // check the folder if the right page is there
+    return _.contains(files, newUrl);
+  });
 };
 
-exports.downloadUrls = function() {
+exports.downloadUrls = function(urlArray) {
+  // for each url in urlArray
+  urlArray.forEach(function(url) {
+    // create a new Promise
+    new Promise(function(resolve, reject) {
+      // check isUrlArchived
+      exports.isUrlArchived(url)
+      // then
+      .then(function(bool) {
+        // if bool is false
+        if (!bool) {
+          //open a request
+          request(url, function(error, response, body) {
+            if (!error && response.statusCode === 200) {
+              // store file in sites folder
+              fs.writeFile(exports.path.archivedSites + url + '.html', body, function(err) {
+                if (err) {
+                  console.log(err);
+                } else {
+                  console.log(url, ' downloaded');
+                }
+              });
+            }
+          }); 
+        }
+      });
+    });
+  });
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
