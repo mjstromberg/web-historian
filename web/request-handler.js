@@ -3,47 +3,72 @@ var archive = require('../helpers/archive-helpers');
 var request = require('request');
 var fs = require('fs');
 
+var defaultCorsHeaders = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type, accept',
+  'access-control-max-age': 10 // Seconds.
+};
+
 exports.handleRequest = function (req, res) {
   // make request function
   // console.log('method', req);
+
   var filePath;
-  var contentType;
+  var headers = defaultCorsHeaders;
+
+  var renderFile = function(filePath, statusCode, respUrl) {
+    fs.readFile(filePath, 'utf8', function(error, content) {
+      if (error) {
+        console.log(error);
+      } else {
+        // serve up our html
+        console.log('working');
+
+        // set contentType in header
+        // headers['Content-Type'] = contentType || 'text/plain';
+
+        // response body
+        var responseBody = {
+          header: headers,
+          method: 'GET',
+          url: respUrl || req.url,
+          results: content
+        };
+        statusCode = statusCode || 200;
+        res.writeHead(statusCode, headers);
+        res.end(responseBody.results);
+      }
+    });
+  };
+
+  
   // if req.method === GET
   if (req.method === 'GET') {
     // if req.url = '/'
-    if (req.url === '/') {
+    var extension = req.url.slice(req.url.lastIndexOf('.') + 1);
+    
+    if (extension === 'css' || extension === 'js' || extension === 'ico') {
+      filePath = path.join(__dirname, '../web/public/' + req.url.slice(req.url.lastIndexOf('/') + 1));
+      renderFile(filePath, 200);
+    } else if (req.url === '/') {
       // grab index.html file
       filePath = path.join(__dirname, '../web/public/index.html');
-      contentType = 'text/html';
-      
+      renderFile(filePath, 200);
       // if url is in sites.txt && url is archived
-    } else if (archive.isUrlInList(req.url) /*&& archive.isUrlArchived(req.url)*/) {
-      // set filePath to sites/url
-      filePath = archive.paths.archivedSites.concat(req.url, '.html');
-      // set contentType to 'text/html'
-      contentType = 'text/html';
-    // else if url is a real website
-      // set filePath to loading.html
-      // set contentType to 'text/html'
-      // add url to sites.txt
-      // save html file in sites folder
-        
-      
+    } else {
+      console.log('running', typeof req.url);
+      archive.isUrlArchived(req.url.toString().slice(1))
+        .then(function(bool) {
+          if (!bool) {
+            filePath = path.join(__dirname, '../web/public/loading.html');
+            renderFile(filePath);     
+          } else {
+            filePath = archive.paths.archivedSites.concat(req.url, '.html');
+            renderFile(filePath);
+          }
+        });    
     }
   }
-  
-
-  fs.readFile(filePath, function(error, content) {
-    if (error) {
-      console.log(error);
-    } else {
-      // serve up our html
-      console.log('working');
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content, 'utf8');
-    }
-  });
-
-  // res.end(archive.paths.list);
 };
 
