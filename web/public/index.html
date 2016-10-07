@@ -6,10 +6,11 @@
 </head>
 <body>
   Enter a URL here:
-  <form method="POST" onsubmit="">
+  <form method="GET" onsubmit="onSubmit(document.getElementById('input').value)">
     <input id="input" type="input" name="url"></input>
   </form>
   <!-- import jQuery -->
+  <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
   <!-- Add submit lister on the form -->
 </body>
 </html>

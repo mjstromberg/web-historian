@@ -23,7 +23,6 @@ exports.handleRequest = function (req, res) {
         console.log(error);
       } else {
         // serve up our html
-        console.log('working');
 
         // set contentType in header
         // headers['Content-Type'] = contentType || 'text/plain';
@@ -46,25 +45,39 @@ exports.handleRequest = function (req, res) {
   // if req.method === GET
   if (req.method === 'GET') {
     // if req.url = '/'
-    var extension = req.url.slice(req.url.lastIndexOf('.') + 1);
-    
-    if (extension === 'css' || extension === 'js' || extension === 'ico') {
-      filePath = path.join(__dirname, '../web/public/' + req.url.slice(req.url.lastIndexOf('/') + 1));
-      renderFile(filePath, 200);
+    var extension = req.url.slice(req.url.lastIndexOf('/') + 1);
+
+    if (extension === 'styles.css' || extension === 'submit.js' || extension === 'jquery.min.js') {
+      console.log(extension);
+      if (extension === 'jquery.min.js') {
+        filePath = path.join(__dirname, '../bower_components/jquery/dist/jquery.min.js');
+        renderFile(filePath, 200);
+      } else {
+        filePath = path.join(__dirname, '../web/public/' + req.url.slice(req.url.lastIndexOf('/') + 1));
+        renderFile(filePath, 200);
+      }
     } else if (req.url === '/') {
       // grab index.html file
       filePath = path.join(__dirname, '../web/public/index.html');
       renderFile(filePath, 200);
       // if url is in sites.txt && url is archived
     } else {
-      console.log('running', typeof req.url);
-      archive.isUrlArchived(req.url.toString().slice(1))
+      console.log('bool', req.url.toString().indexOf('=') !== -1);
+      if (req.url.toString().indexOf('=') !== -1) {
+        var domain = req.url.toString().slice(req.url.lastIndexOf('=') + 1);
+        console.log('domain', domain);
+      } else {
+        var domain = req.url.toString().slice(1);
+      }
+      console.log('running', req.url);
+      archive.isUrlArchived(domain)
         .then(function(bool) {
           if (!bool) {
             filePath = path.join(__dirname, '../web/public/loading.html');
-            renderFile(filePath);     
+            renderFile(filePath);
+            archive.addUrlToList(domain);     
           } else {
-            filePath = archive.paths.archivedSites.concat(req.url, '.html');
+            filePath = archive.paths.archivedSites.concat('/', domain, '.html');
             renderFile(filePath);
           }
         });    
